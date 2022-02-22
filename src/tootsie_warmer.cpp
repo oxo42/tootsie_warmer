@@ -86,7 +86,7 @@ void setup()
   dev.addIdentifier(WiFi.macAddress());
 
   tootsie_timer.addConfigVar("expire_after", "180");
-  tootsie_timer.addConfigVar("force_update", "true");
+  tootsie_timer.addConfigVar("force_update", "true ");
   tootsie_timer.addConfigVar("dev", dev.getPayload());
   tootsie_timer.enableAttributesTopic();
 

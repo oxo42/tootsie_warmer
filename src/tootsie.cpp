@@ -14,3 +14,52 @@ const String duration_to_timestamp(int duration)
     sprintf(result, "%02hu:%02hu:%02hu", hours, minutes, seconds);
     return String(result);
 }
+
+HAMqttDeviceRegistry::HAMqttDeviceRegistry() {}
+HAMqttDeviceRegistry::~HAMqttDeviceRegistry() {}
+
+HAMqttDeviceRegistry &HAMqttDeviceRegistry::addAttribute(const String &name, const String &value)
+{
+    _attributes.push_back({name, value});
+    return *this;
+}
+
+HAMqttDeviceRegistry &HAMqttDeviceRegistry::addIdentifier(const String &identifier)
+{
+    _identifiers.push_back(identifier);
+    return *this;
+}
+
+HAMqttDeviceRegistry &HAMqttDeviceRegistry::clearAttributes()
+{
+    _attributes.clear();
+    _identifiers.clear();
+    return *this;
+}
+
+const String HAMqttDeviceRegistry::getPayload() const
+{
+    String attrPayload = "{";
+
+    for (uint8_t i = 0; i < _attributes.size(); i++)
+    {
+        attrPayload.concat('"');
+        attrPayload.concat(_attributes[i].key);
+        attrPayload.concat("\":\"");
+        attrPayload.concat(_attributes[i].value);
+        attrPayload.concat("\",");
+    }
+
+    attrPayload.concat("\"ids\":[");
+    for (uint8_t i = 0; i < _identifiers.size(); i++)
+    {
+        attrPayload.concat('"');
+        attrPayload.concat(_identifiers[i]);
+        attrPayload.concat("\",");
+    }
+    attrPayload.setCharAt(attrPayload.length() - 1, ']');
+
+    attrPayload.concat("}");
+
+    return attrPayload;
+}
