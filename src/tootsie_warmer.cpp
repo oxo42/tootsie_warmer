@@ -5,7 +5,6 @@
 #include <AsyncTimer.h>
 #include <EspMQTTClient.h>
 #include <LiquidCrystal.h>
-#include <ArduinoJson.h>
 #include <ESP8266Wifi.h>
 #include <HAMqttDevice.h>
 
@@ -31,10 +30,6 @@ int log_timer_id = 0;
 int total_time_ms = 0;
 LiquidCrystal lcd(D1, D8, D0, D7, D6, D5);
 
-const String SENSOR_ID{"tootsie"};
-
-const String state_topic{"homeassistant/sensor/" + SENSOR_ID + "/state"};
-const String attr_topic{"homeassistant/sensor/" + SENSOR_ID + "/attributes"};
 
 HAMqttDevice tootsie_timer("tootsie_timer", HAMqttDevice::SENSOR, "homeassistant");
 
@@ -42,62 +37,15 @@ void logTimeLeft();
 void onSetMessageReceived(const String &payload);
 void stop();
 
-void publishEntity(String entityType, String entity, String unit, String deviceClass = "None")
-{
-  DynamicJsonDocument configPayload(1024);
-  configPayload["stat_t"] = state_topic.c_str();
-  // configPayload["expire_after"] = EXPIRE_AFTER;
-  configPayload["dev"]["name"] = SENSOR_ID.c_str();
-  configPayload["dev"]["model"] = "TootsieWarmer";
-  configPayload["dev"]["manufacturer"] = "Ox";
-  JsonArray identifiers{configPayload["dev"].createNestedArray("ids")};
-  identifiers.add(WiFi.macAddress());
-
-  const String unique_id{SENSOR_ID + "_" + entity};
-  const String value_template{"{{value_json['" + entity + "']}}"};
-
-  configPayload["name"] = unique_id.c_str();
-  configPayload["uniq_id"] = unique_id.c_str();
-  configPayload["val_tpl"] = value_template.c_str();
-  configPayload["unit_of_meas"] = unit.c_str();
-  if (deviceClass != "None")
-    configPayload["device_class"] = deviceClass.c_str();
-
-  const String config_topic_entity{"homeassistant/" + entityType + "/" + SENSOR_ID + "_" + entity + "/config"};
-
-  char configPayloadSerialized[1024]{};
-  serializeJson(configPayload, configPayloadSerialized);
-  if (DEBUG)
-  {
-    Serial.println(config_topic_entity.c_str());
-    Serial.println(configPayloadSerialized);
-  }
-
-  // Publishing
-  if (!client.publish(config_topic_entity.c_str(), configPayloadSerialized, true))
-    Serial.println("Config entity NOT published");
-}
 
 void sendConfig()
 {
-  publishEntity("sensor", "duration", "s");
-  logTimeLeft();
   client.publish(tootsie_timer.getConfigTopic(), tootsie_timer.getConfigPayload());
+  logTimeLeft();
 }
 
 void sendDurationRemaining(unsigned int seconds_left)
 {
-  DynamicJsonDocument sensorData(1024);
-  sensorData["duration"] = seconds_left;
-
-  char buffer[1024]{""};
-  serializeJson(sensorData, buffer);
-  if (DEBUG)
-    Serial.println(buffer);
-
-  if (!client.publish(state_topic.c_str(), buffer, true))
-    Serial.println("state NOT published");
-
   tootsie_timer.clearAttributes();
   tootsie_timer.addAttribute("duration", "the duration");
   tootsie_timer.addAttribute("remaining", String(seconds_left));
