@@ -1,6 +1,1 @@
-#include <Arduino.h>
-
-int x()
-{
-    return 42;
-}
+#include "tootsie.h"

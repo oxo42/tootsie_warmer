@@ -10,8 +10,6 @@
 
 #include "tootsie.h"
 
-#define DEBUG 0
-
 #define RELAY_PIN D4
 #define BUTTON_ADD D3
 #define BUTTON_STOP D2
@@ -43,38 +41,38 @@ void stop();
 
 void publishEntity(String entityType, String entity, String unit, String deviceClass = "None")
 {
-    DynamicJsonDocument configPayload(1024);
-    configPayload["stat_t"] = state_topic.c_str();
-    // configPayload["expire_after"] = EXPIRE_AFTER;
-    configPayload["dev"]["name"] = SENSOR_ID.c_str();
-    configPayload["dev"]["model"] = "TootsieWarmer";
-    configPayload["dev"]["manufacturer"] = "Ox";
-    JsonArray identifiers{configPayload["dev"].createNestedArray("ids")};
-    identifiers.add(WiFi.macAddress());
+  DynamicJsonDocument configPayload(1024);
+  configPayload["stat_t"] = state_topic.c_str();
+  // configPayload["expire_after"] = EXPIRE_AFTER;
+  configPayload["dev"]["name"] = SENSOR_ID.c_str();
+  configPayload["dev"]["model"] = "TootsieWarmer";
+  configPayload["dev"]["manufacturer"] = "Ox";
+  JsonArray identifiers{configPayload["dev"].createNestedArray("ids")};
+  identifiers.add(WiFi.macAddress());
 
-    const String unique_id{SENSOR_ID + "_" + entity};
-    const String value_template{"{{value_json['" + entity + "']}}"};
+  const String unique_id{SENSOR_ID + "_" + entity};
+  const String value_template{"{{value_json['" + entity + "']}}"};
 
-    configPayload["name"] = unique_id.c_str();
-    configPayload["uniq_id"] = unique_id.c_str();
-    configPayload["val_tpl"] = value_template.c_str();
-    configPayload["unit_of_meas"] = unit.c_str();
-    if (deviceClass != "None")
-        configPayload["device_class"] = deviceClass.c_str();
+  configPayload["name"] = unique_id.c_str();
+  configPayload["uniq_id"] = unique_id.c_str();
+  configPayload["val_tpl"] = value_template.c_str();
+  configPayload["unit_of_meas"] = unit.c_str();
+  if (deviceClass != "None")
+    configPayload["device_class"] = deviceClass.c_str();
 
-    const String config_topic_entity{"homeassistant/" + entityType + "/" + SENSOR_ID + "_" + entity + "/config"};
+  const String config_topic_entity{"homeassistant/" + entityType + "/" + SENSOR_ID + "_" + entity + "/config"};
 
-    char configPayloadSerialized[1024]{};
-    serializeJson(configPayload, configPayloadSerialized);
-    if (DEBUG)
-    {
-        Serial.println(config_topic_entity.c_str());
-        Serial.println(configPayloadSerialized);
-    }
+  char configPayloadSerialized[1024]{};
+  serializeJson(configPayload, configPayloadSerialized);
+  if (DEBUG)
+  {
+    Serial.println(config_topic_entity.c_str());
+    Serial.println(configPayloadSerialized);
+  }
 
-    // Publishing
-    if (!client.publish(config_topic_entity.c_str(), configPayloadSerialized, true))
-        Serial.println("Config entity NOT published");
+  // Publishing
+  if (!client.publish(config_topic_entity.c_str(), configPayloadSerialized, true))
+    Serial.println("Config entity NOT published");
 }
 
 void sendConfig()
@@ -108,7 +106,6 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("");
-  Serial.println(x());
   Serial.println("Setting up buttons");
 
   pinMode(RELAY_PIN, OUTPUT);
@@ -130,7 +127,7 @@ void logTimeLeft()
 {
   if (timer_id > 0)
   {
-    unsigned long seconds_left = t.getMsLeft(timer_id) / 1000;
+    unsigned long seconds_left = t.getRemaining(timer_id) / 1000;
     sendDurationRemaining(seconds_left);
     Serial.print("Seconds left: ");
     Serial.println(seconds_left);

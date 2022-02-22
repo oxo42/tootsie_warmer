@@ -1,2 +1,10 @@
+#ifndef TOOTSIE_H
+#define TOOTSIE_H
 
-int x();
+#define DEBUG 0
+
+#include "Arduino.h"
+
+
+
+#endif
