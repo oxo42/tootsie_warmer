@@ -13,7 +13,7 @@
 #define RELAY_PIN D4
 #define BUTTON_ADD D3
 #define BUTTON_STOP D2
-#define ADD_SECONDS 15 * 60
+#define ADD_SECONDS 5 * 60
 #define MAX_SECONDS 180 * 60
 
 #define EXPIRE_AFTER "180"
@@ -30,13 +30,11 @@ int log_timer_id = 0;
 int total_time_ms = 0;
 LiquidCrystal lcd(D1, D8, D0, D7, D6, D5);
 
-
 HAMqttDevice tootsie_timer("tootsie_timer", HAMqttDevice::SENSOR, "homeassistant");
 
 void logTimeLeft();
 void onSetMessageReceived(const String &payload);
 void stop();
-
 
 void sendConfig()
 {
@@ -47,8 +45,8 @@ void sendConfig()
 void sendDurationRemaining(unsigned int seconds_left)
 {
   tootsie_timer.clearAttributes();
-  tootsie_timer.addAttribute("duration", "the duration");
-  tootsie_timer.addAttribute("remaining", String(seconds_left));
+  tootsie_timer.addAttribute("duration", duration_to_timestamp(total_time_ms / 1000));
+  tootsie_timer.addAttribute("remaining", duration_to_timestamp(seconds_left));
   client.publish(tootsie_timer.getAttributesTopic(), tootsie_timer.getAttributesPayload());
   if (seconds_left > 0)
     client.publish(tootsie_timer.getStateTopic(), "active");
@@ -88,6 +86,7 @@ void setup()
   dev.addIdentifier(WiFi.macAddress());
 
   tootsie_timer.addConfigVar("expire_after", "180");
+  tootsie_timer.addConfigVar("force_update", "true");
   tootsie_timer.addConfigVar("dev", dev.getPayload());
   tootsie_timer.enableAttributesTopic();
 
@@ -104,7 +103,7 @@ void logTimeLeft()
     Serial.println(seconds_left);
     lcd.setCursor(0, 1);
     lcd.print("Time: ");
-    lcd.print(seconds_left);
+    lcd.print(duration_to_timestamp(seconds_left));
     lcd.print("s            ");
   }
   else

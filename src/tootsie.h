@@ -5,6 +5,6 @@
 
 #include "Arduino.h"
 
-
+const String duration_to_timestamp(int duration);
 
 #endif
