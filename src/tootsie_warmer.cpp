@@ -7,6 +7,7 @@
 #include <LiquidCrystal.h>
 #include <ArduinoJson.h>
 #include <ESP8266Wifi.h>
+#include <HAMqttDevice.h>
 
 #include "tootsie.h"
 
@@ -34,6 +35,8 @@ const String SENSOR_ID{"tootsie"};
 
 const String state_topic{"homeassistant/sensor/" + SENSOR_ID + "/state"};
 const String attr_topic{"homeassistant/sensor/" + SENSOR_ID + "/attributes"};
+
+HAMqttDevice tootsie_timer("tootsie_timer", HAMqttDevice::SENSOR, "homeassistant");
 
 void logTimeLeft();
 void onSetMessageReceived(const String &payload);
@@ -79,6 +82,7 @@ void sendConfig()
 {
   publishEntity("sensor", "duration", "s");
   logTimeLeft();
+  client.publish(tootsie_timer.getConfigTopic(), tootsie_timer.getConfigPayload());
 }
 
 void sendDurationRemaining(unsigned int seconds_left)
@@ -93,6 +97,15 @@ void sendDurationRemaining(unsigned int seconds_left)
 
   if (!client.publish(state_topic.c_str(), buffer, true))
     Serial.println("state NOT published");
+
+  tootsie_timer.clearAttributes();
+  tootsie_timer.addAttribute("duration", "the duration");
+  tootsie_timer.addAttribute("remaining", String(seconds_left));
+  client.publish(tootsie_timer.getAttributesTopic(), tootsie_timer.getAttributesPayload());
+  if (seconds_left > 0)
+    client.publish(tootsie_timer.getStateTopic(), "active");
+  else
+    client.publish(tootsie_timer.getStateTopic(), "idle");
 }
 
 void onConnectionEstablished()
@@ -118,8 +131,18 @@ void setup()
   lcd.print("Tootsie Warmer!");
   lcd.setCursor(0, 1);
   lcd.print("Idle");
-
   client.setMaxPacketSize(1024);
+
+  HAMqttDeviceRegistry dev;
+  dev.addAttribute("name", "tootsie");
+  dev.addAttribute("model", "TootsieWarmer");
+  dev.addAttribute("manufacturer", "Ox");
+  dev.addIdentifier(WiFi.macAddress());
+
+  tootsie_timer.addConfigVar("expire_after", "180");
+  tootsie_timer.addConfigVar("dev", dev.getPayload());
+  tootsie_timer.enableAttributesTopic();
+
   Serial.println("Initialisation Complete");
 }
 
