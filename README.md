@@ -26,7 +26,7 @@ The device shows up in home assistant as a sensor in the active or idle states.
 
 ![Home Assistant Device](images/hass-device.png)
 
-It has attributes of `duration` and `remaining` showing how long is left.  These fit really well with the [Lovelace Timer Bar Card](https://github.com/rianadon/timer-bar-card).
+It has attributes of `duration` and `remaining` showing how long is left.  These fit really well with the [Lovelace Timer Bar Card](https://github.com/rianadon/timer-bar-card).  There is a weird thing with the timer bar card that it loses between 5 and 10 seconds due to how it works out time remaining.  I might fix this in #1.
 
 ![Timer with attributes](images/timer_attrs.png)
 
