@@ -6,7 +6,3 @@
 
 # In it's own fork
 lib/AsyncTimer
-lib/HAMqttDevice
-
-# Come back to this
-kicad
