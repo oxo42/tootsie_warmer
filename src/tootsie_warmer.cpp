@@ -13,7 +13,7 @@
 #define RELAY_PIN D4
 #define BUTTON_ADD D3
 #define BUTTON_STOP D2
-#define ADD_SECONDS 5 * 60
+#define ADD_SECONDS 15 * 60
 #define MAX_SECONDS 180 * 60
 
 #define EXPIRE_AFTER "180"
@@ -104,7 +104,7 @@ void logTimeLeft()
     lcd.setCursor(0, 1);
     lcd.print("Time: ");
     lcd.print(duration_to_timestamp(seconds_left));
-    lcd.print("s            ");
+    lcd.print("   ");
   }
   else
   {
