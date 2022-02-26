@@ -17,6 +17,7 @@
 #define MAX_SECONDS 180 * 60
 
 #define EXPIRE_AFTER "180"
+#define ALIVE_TIMEOUT 120 * 1000
 
 EspMQTTClient client(
     "LAN Solo",
@@ -27,6 +28,7 @@ EspMQTTClient client(
 AsyncTimer t;
 int timer_id = 0;
 int log_timer_id = 0;
+int alive_timer_id = 0;
 int total_time_ms = 0;
 LiquidCrystal lcd(D1, D8, D0, D7, D6, D5);
 
@@ -59,6 +61,8 @@ void onConnectionEstablished()
   Serial.println("MQTT Connection Established");
   sendConfig();
   client.subscribe("homeassistant/sensor/tootsie/set", onSetMessageReceived);
+  if (alive_timer_id <= 0)
+    alive_timer_id = t.setInterval(logTimeLeft, ALIVE_TIMEOUT);
 }
 
 void setup()
