@@ -10,9 +10,9 @@
 
 #include "tootsie.h"
 
-#define RELAY_PIN D4
+#define RELAY_PIN D2
 #define BUTTON_ADD D3
-#define BUTTON_STOP D2
+#define BUTTON_STOP D4
 #define ADD_SECONDS 15 * 60
 #define MAX_SECONDS 180 * 60
 
